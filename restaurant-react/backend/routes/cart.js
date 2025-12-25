@@ -13,7 +13,15 @@ router.get('/', authenticateToken, async (req, res) => {
         });
 
         const total = cartItems.reduce((sum, item) => {
-            return sum + (item.dish.prix * item.quantite);
+            const basePrice = item.dish.prix;
+            let extrasPrice = 0;
+
+            // Handle new object-based customization or fallback to old array-based
+            if (item.customization && !Array.isArray(item.customization) && item.customization.added) {
+                extrasPrice = item.customization.added.reduce((eSum, extra) => eSum + (extra.prix || 0), 0);
+            }
+
+            return sum + ((basePrice + extrasPrice) * item.quantite);
         }, 0);
 
         res.json({ items: cartItems, total });
@@ -27,26 +35,32 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/add/:dishId', authenticateToken, async (req, res) => {
     try {
         const dishId = parseInt(req.params.dishId);
-        const quantite = parseInt(req.body.quantite) || 1;
+        const { quantite = 1, customization = { removed: [], added: [] } } = req.body;
 
         const dish = await Dish.findByPk(dishId);
         if (!dish) {
             return res.status(404).json({ message: 'Plat non trouvé' });
         }
 
-        // Check if item already in cart
-        const existingItem = await CartItem.findOne({
+        // Check if item already in cart with EXACT same customization
+        const existingItems = await CartItem.findAll({
             where: { user_id: req.user.id, dish_id: dishId },
         });
 
-        if (existingItem) {
-            existingItem.quantite += quantite;
-            await existingItem.save();
+        // Robust comparison for customization
+        const match = existingItems.find(item =>
+            JSON.stringify(item.customization) === JSON.stringify(customization)
+        );
+
+        if (match) {
+            match.quantite += quantite;
+            await match.save();
         } else {
             await CartItem.create({
                 user_id: req.user.id,
                 dish_id: dishId,
                 quantite,
+                customization
             });
         }
 

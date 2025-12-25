@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useNotification } from './NotificationContext';
 import { authAPI } from '../services/api';
 
@@ -59,15 +59,16 @@ export const AuthProvider = ({ children }) => {
         info('Vous êtes déconnecté!');
     };
 
-    const value = {
+    const value = useMemo(() => ({
         user,
+        setUser,
         loading,
         login,
         register,
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
-    };
+    }), [user, loading, login, register, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

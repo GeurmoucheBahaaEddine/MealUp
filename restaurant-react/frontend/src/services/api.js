@@ -24,29 +24,35 @@ export const authAPI = {
     register: (data) => api.post('/auth/register', data),
     login: (data) => api.post('/auth/login', data),
     getCurrentUser: () => api.get('/auth/me'),
+    updateProfile: (data) => api.put('/auth/profile', data),
+    changePassword: (data) => api.post('/auth/change-password', data),
 };
 
 // Dishes API
 export const dishesAPI = {
-    getAll: () => api.get('/dishes'),
+    getAll: (params) => api.get('/dishes', { params }),
     getPopular: () => api.get('/dishes/popular'),
     getNew: () => api.get('/dishes/new'),
     getOne: (id) => api.get(`/dishes/${id}`),
     createDish: (data) => api.post('/dishes', data),
+    updateDish: (id, data) => api.put(`/dishes/${id}`, data),
+    deleteDish: (id) => api.delete(`/dishes/${id}`),
+    toggleAvailability: (id) => api.put(`/dishes/${id}/toggle-availability`),
 };
 
 // Cart API
 export const cartAPI = {
     getCart: () => api.get('/cart'),
-    addToCart: (dishId, quantite) => api.post(`/cart/add/${dishId}`, { quantite }),
+    addToCart: (dishId, quantite, customization = []) => api.post(`/cart/add/${dishId}`, { quantite, customization }),
     removeFromCart: (itemId) => api.delete(`/cart/${itemId}`),
     updateQuantity: (itemId, quantite) => api.put(`/cart/${itemId}`, { quantite }),
 };
 
 // Orders API
 export const ordersAPI = {
-    getOrders: () => api.get('/orders'),
-    confirmOrder: (promoCode) => api.post('/orders/confirm', { promoCode }),
+    getMyOrders: () => api.get('/orders'),
+    confirmOrder: (data) => api.post('/orders/confirm', data),
+    getMyStats: () => api.get('/orders/stats/me'),
 };
 
 // Favorites API
@@ -61,6 +67,9 @@ export const adminAPI = {
     getStats: () => api.get('/admin/stats'),
     getSalesAnalytics: (period = '7days') => api.get(`/admin/analytics/sales?period=${period}`),
     getTopDishes: () => api.get('/admin/analytics/top-dishes'),
+    getCategoryAnalytics: () => api.get('/admin/analytics/categories'),
+    getHourlyAnalytics: () => api.get('/admin/analytics/hourly'),
+    getCustomerAnalytics: () => api.get('/admin/analytics/customers'),
     getRecentOrders: (limit = 10) => api.get(`/admin/recent-orders?limit=${limit}`),
     getAllOrders: (params) => api.get('/admin/orders', { params }),
     updateOrderStatus: (orderId, status) => api.put(`/admin/orders/${orderId}/status`, { status }),
@@ -79,6 +88,15 @@ export const adminAPI = {
 export const reviewsAPI = {
     getByDish: (dishId) => api.get(`/reviews/dish/${dishId}`),
     addReview: (dishId, data) => api.post(`/reviews/dish/${dishId}`, data),
+};
+
+// Ingredients API
+export const ingredientsAPI = {
+    getAll: () => api.get('/ingredients'),
+    getLowStock: () => api.get('/ingredients/low-stock'),
+    create: (data) => api.post('/ingredients', data),
+    update: (id, data) => api.put(`/ingredients/${id}`, data),
+    delete: (id) => api.delete(`/ingredients/${id}`),
 };
 
 // Activity Log API

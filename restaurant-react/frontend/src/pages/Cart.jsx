@@ -67,7 +67,7 @@ const Cart = () => {
     const confirmOrder = async () => {
         setProcessing(true);
         try {
-            const response = await ordersAPI.confirmOrder(appliedPromo?.code);
+            const response = await ordersAPI.confirmOrder({ promoCode: appliedPromo?.code });
             success(response.data.message);
             setCart(null);
             navigate('/orders');
@@ -105,20 +105,52 @@ const Cart = () => {
                         {cartItems.map((item) => (
                             <div key={item.id} className="card p-6 flex items-center gap-6 hover:shadow-lg transition-all">
                                 <img
-                                    src={item.dish.image}
+                                    src={item.dish.image_url}
                                     alt={item.dish.nom}
                                     className="w-24 h-24 object-cover rounded-lg"
                                 />
                                 <div className="flex-grow">
                                     <h3 className="text-xl font-bold mb-1">{item.dish.nom}</h3>
-                                    <p className="text-gray-600 mb-2">{item.dish.categorie}</p>
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        <span className="text-secondary font-bold text-xs bg-secondary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                            {item.dish.categorie}
+                                        </span>
+                                        {/* Display removals */}
+                                        {item.customization && item.customization.removed && item.customization.removed.length > 0 && (
+                                            <span className="text-red-500 font-bold text-xs bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-red-100 italic">
+                                                Sans: {item.customization.removed.join(', ')}
+                                            </span>
+                                        )}
+                                        {/* Display extras */}
+                                        {item.customization && item.customization.added && item.customization.added.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.customization.added.map((extra, idx) => (
+                                                    <span key={idx} className="text-green-600 font-bold text-[10px] bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-tight border border-green-100">
+                                                        +{extra.nom} ({extra.prix} DA)
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     <p className="text-lg font-semibold text-primary">
-                                        {(item.dish.prix || 0).toLocaleString()} DA × {item.quantite}
+                                        {(() => {
+                                            const basePrice = item.dish.prix || 0;
+                                            const extrasPrice = (item.customization && item.customization.added)
+                                                ? item.customization.added.reduce((sum, e) => sum + (e.prix || 0), 0)
+                                                : 0;
+                                            return (basePrice + extrasPrice).toLocaleString();
+                                        })()} DA × {item.quantite}
                                     </p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-2xl font-bold text-primary mb-3">
-                                        {((item.dish.prix || 0) * item.quantite).toLocaleString()} DA
+                                        {(() => {
+                                            const basePrice = item.dish.prix || 0;
+                                            const extrasPrice = (item.customization && item.customization.added)
+                                                ? item.customization.added.reduce((sum, e) => sum + (e.prix || 0), 0)
+                                                : 0;
+                                            return ((basePrice + extrasPrice) * item.quantite).toLocaleString();
+                                        })()} DA
                                     </p>
                                     <button
                                         onClick={() => removeItem(item.id)}
@@ -146,12 +178,14 @@ const Cart = () => {
                                         <div className="flex gap-2">
                                             <input
                                                 type="text"
+                                                id="promoCode"
+                                                name="promoCode"
                                                 placeholder="Code Promo"
                                                 value={promoCodeInput}
                                                 onChange={(e) => setPromoCodeInput(e.target.value)}
                                                 className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none uppercase"
                                             />
-                                            <button 
+                                            <button
                                                 onClick={handleApplyPromo}
                                                 disabled={!promoCodeInput}
                                                 className="bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

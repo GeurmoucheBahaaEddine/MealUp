@@ -27,6 +27,11 @@ const OrderItem = sequelize.define('OrderItem', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    customization: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: [],
+    },
 }, {
     tableName: 'order_items',
     timestamps: false,

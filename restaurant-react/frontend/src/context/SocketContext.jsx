@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -13,7 +13,11 @@ export const SocketProvider = ({ children }) => {
     const { user } = useAuth();
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        // Use the API URL but remove the /api suffix for the socket connection
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const socketUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+
+        const newSocket = io(socketUrl);
         setSocket(newSocket);
 
         return () => newSocket.close();
@@ -25,8 +29,10 @@ export const SocketProvider = ({ children }) => {
         }
     }, [socket, user]);
 
+    const contextValue = useMemo(() => socket, [socket]);
+
     return (
-        <SocketContext.Provider value={socket}>
+        <SocketContext.Provider value={contextValue}>
             {children}
         </SocketContext.Provider>
     );

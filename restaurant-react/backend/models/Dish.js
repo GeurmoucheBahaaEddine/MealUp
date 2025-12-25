@@ -35,8 +35,22 @@ const Dish = sequelize.define('Dish', {
     categorie: {
         type: DataTypes.STRING(50),
     },
-    image: {
-        type: DataTypes.STRING(300),
+    is_available: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
+    is_popular: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    is_new: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    stock: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 50,
     },
 }, {
     tableName: 'dishes',

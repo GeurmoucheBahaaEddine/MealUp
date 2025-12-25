@@ -19,6 +19,11 @@ const CartItem = sequelize.define('CartItem', {
         type: DataTypes.INTEGER,
         defaultValue: 1,
     },
+    customization: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: [],
+    },
 }, {
     tableName: 'cart_items',
     timestamps: false,

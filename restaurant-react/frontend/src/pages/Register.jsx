@@ -61,6 +61,7 @@ const Register = () => {
                         </label>
                         <input
                             type="text"
+                            id="nom"
                             name="nom"
                             value={formData.nom}
                             onChange={handleChange}
@@ -77,6 +78,7 @@ const Register = () => {
                         </label>
                         <input
                             type="email"
+                            id="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
@@ -93,6 +95,7 @@ const Register = () => {
                         </label>
                         <input
                             type="text"
+                            id="adresse"
                             name="adresse"
                             value={formData.adresse}
                             onChange={handleChange}
@@ -109,6 +112,7 @@ const Register = () => {
                         </label>
                         <input
                             type="password"
+                            id="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
@@ -125,6 +129,7 @@ const Register = () => {
                         </label>
                         <input
                             type="password"
+                            id="confirm_password"
                             name="confirm_password"
                             value={formData.confirm_password}
                             onChange={handleChange}

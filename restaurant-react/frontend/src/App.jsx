@@ -13,11 +13,13 @@ import Orders from './pages/Orders';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
 import DishDetails from './pages/DishDetails';
-import AddDish from './pages/AddDish';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import Reports from './pages/admin/Reports';
 import ActivityLog from './pages/admin/ActivityLog';
 import PromoCodes from './pages/admin/PromoCodes';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminDishes from './pages/admin/AdminDishes';
+import EditDish from './pages/admin/EditDish';
 import Users from './pages/admin/Users';
 import NotFound from './pages/NotFound';
 import Forbidden from './pages/Forbidden';
@@ -66,11 +68,13 @@ function App() {
                         </ProtectedRoute>
                     }>
                         <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="reports" element={<Reports />} />
                         <Route path="activity-log" element={<ActivityLog />} />
                         <Route path="promocodes" element={<PromoCodes />} />
                         <Route path="orders" element={<AdminOrders />} />
+                        <Route path="dishes" element={<AdminDishes />} />
                         <Route path="users" element={<Users />} />
-                        <Route path="add-dish" element={<AddDish />} />
+                        <Route path="edit-dish/:id" element={<EditDish />} />
                     </Route>
 
                     {/* Error Pages */}

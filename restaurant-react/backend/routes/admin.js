@@ -119,6 +119,76 @@ router.get('/analytics/top-dishes', async (req, res) => {
     }
 });
 
+// Get analytics by Category
+router.get('/analytics/categories', async (req, res) => {
+    try {
+        const stats = await OrderItem.findAll({
+            attributes: [
+                [sequelize.col('Dish.categorie'), 'category'],
+                [sequelize.fn('SUM', sequelize.col('quantite')), 'total_sold'],
+                [sequelize.fn('SUM', sequelize.literal('plat_prix * quantite')), 'revenue'],
+            ],
+            include: [{
+                model: Dish,
+                attributes: []
+            }],
+            group: ['Dish.categorie'],
+            raw: true
+        });
+        res.json(stats);
+    } catch (error) {
+        console.error('Get category analytics error:', error);
+        res.status(500).json({ message: 'Erreur lors de la récupération des statistiques par catégorie' });
+    }
+});
+
+// Get hourly order trends
+router.get('/analytics/hourly', async (req, res) => {
+    try {
+        const trends = await Order.findAll({
+            attributes: [
+                [sequelize.fn('strftime', '%H', sequelize.col('date_commande')), 'hour'],
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+                [sequelize.fn('SUM', sequelize.col('total')), 'revenue'],
+            ],
+            group: [sequelize.fn('strftime', '%H', sequelize.col('date_commande'))],
+            order: [[sequelize.literal('hour'), 'ASC']],
+            raw: true
+        });
+        res.json(trends);
+    } catch (error) {
+        console.error('Get hourly trends error:', error);
+        res.status(500).json({ message: 'Erreur lors de la récupération des tendances horaires' });
+    }
+});
+
+// Get top customers
+router.get('/analytics/customers', async (req, res) => {
+    try {
+        const topCustomers = await Order.findAll({
+            attributes: [
+                'user_id',
+                [sequelize.fn('COUNT', sequelize.col('Order.id')), 'order_count'],
+                [sequelize.fn('SUM', sequelize.col('total')), 'total_spent'],
+            ],
+            include: [{
+                model: User,
+                as: 'client',
+                attributes: ['nom', 'email']
+            }],
+            group: ['user_id', 'client.id'],
+            order: [[sequelize.literal('total_spent'), 'DESC']],
+            limit: 5,
+            raw: true,
+            nest: true
+        });
+        res.json(topCustomers);
+    } catch (error) {
+        console.error('Get top customers error:', error);
+        res.status(500).json({ message: 'Erreur lors de la récupération des meilleurs clients' });
+    }
+});
+
 // Get recent orders
 router.get('/recent-orders', async (req, res) => {
     try {
@@ -158,6 +228,18 @@ router.get('/orders', async (req, res) => {
             where.statut = status;
         }
 
+        if (search) {
+            where[Op.or] = [
+                { '$client.nom$': { [Op.like]: `%${search}%` } },
+                { '$client.email$': { [Op.like]: `%${search}%` } },
+            ];
+
+            // If search is a number, also search by Order ID
+            if (!isNaN(search)) {
+                where[Op.or].push({ id: parseInt(search) });
+            }
+        }
+
         const orders = await Order.findAndCountAll({
             where,
             include: [
@@ -165,12 +247,6 @@ router.get('/orders', async (req, res) => {
                     model: User,
                     as: 'client',
                     attributes: ['id', 'nom', 'email'],
-                    where: search ? {
-                        [Op.or]: [
-                            { nom: { [Op.like]: `%${search}%` } },
-                            { email: { [Op.like]: `%${search}%` } },
-                        ],
-                    } : undefined,
                 },
                 {
                     model: OrderItem,

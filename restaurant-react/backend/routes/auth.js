@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/index.js';
 import { createLog } from '../middleware/activityLogger.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -111,6 +112,66 @@ router.get('/me', async (req, res) => {
         });
     } catch (error) {
         res.status(401).json({ message: 'Invalid token' });
+    }
+});
+
+// Update profile
+router.put('/profile', authenticateToken, async (req, res) => {
+    try {
+        const { nom, adresse } = req.body;
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        user.nom = nom || user.nom;
+        user.adresse = adresse || user.adresse;
+        await user.save();
+
+        await createLog(user.id, 'UPDATE_PROFILE', 'USER', user.id, 'Profil mis à jour', req);
+
+        res.json({
+            message: 'Profil mis à jour avec succès!',
+            user: {
+                id: user.id,
+                nom: user.nom,
+                email: user.email,
+                adresse: user.adresse,
+                role: user.role,
+                status: user.status
+            }
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
+    }
+});
+
+// Change password
+router.post('/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        const isValid = await user.checkPassword(currentPassword);
+        if (!isValid) {
+            return res.status(400).json({ message: 'L\'ancien mot de passe est incorrect' });
+        }
+
+        await user.setPassword(newPassword);
+        await user.save();
+
+        await createLog(user.id, 'CHANGE_PASSWORD', 'USER', user.id, 'Mot de passe modifié', req);
+
+        res.json({ message: 'Mot de passe modifié avec succès!' });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({ message: 'Erreur lors du changement de mot de passe' });
     }
 });
 

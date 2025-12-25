@@ -145,20 +145,22 @@ const Home = () => {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {popularDishes.map((dish) => (
                                 <div key={dish.id} className="card card-hover overflow-hidden fade-in-up">
-                                    <div className="relative">
+                                    <Link to={`/dish/${dish.id}`} className="block h-64 overflow-hidden relative group">
                                         <img
-                                            src={dish.image}
+                                            src={dish.image_url}
                                             alt={dish.nom}
-                                            className="w-full h-64 object-cover"
-                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=600&q=80'; }}
                                         />
                                         <span className="absolute top-4 right-4 badge badge-warning">
                                             <FaStar className="inline mr-1" />
                                             Populaire
                                         </span>
-                                    </div>
+                                    </Link>
                                     <div className="p-6">
-                                        <h3 className="text-2xl font-bold mb-2">{dish.nom}</h3>
+                                        <Link to={`/dish/${dish.id}`} className="block">
+                                            <h3 className="text-2xl font-bold mb-2 hover:text-primary transition-colors">{dish.nom}</h3>
+                                        </Link>
                                         <p className="text-gray-600 mb-4">
                                             <FaUtensils className="inline mr-2" />
                                             {dish.categorie}
@@ -213,19 +215,22 @@ const Home = () => {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {newDishes.map((dish) => (
-                            <div key={dish.id} className="card card-hover overflow-hidden">
-                                <div className="relative">
+                            <div key={dish.id} className="card card-hover overflow-hidden group">
+                                <Link to={`/dish/${dish.id}`} className="block h-48 overflow-hidden relative">
                                     <img
-                                        src={dish.image}
+                                        src={dish.image_url}
                                         alt={dish.nom}
-                                        className="w-full h-48 object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=600&q=80'; }}
                                     />
                                     <span className="absolute top-4 left-4 badge badge-success">
                                         Nouveau
                                     </span>
-                                </div>
+                                </Link>
                                 <div className="p-6 text-center">
-                                    <h3 className="text-xl font-bold mb-2">{dish.nom}</h3>
+                                    <Link to={`/dish/${dish.id}`} className="block">
+                                        <h3 className="text-xl font-bold mb-2 hover:text-primary transition-colors">{dish.nom}</h3>
+                                    </Link>
                                     <p className="text-gray-600 mb-3">{dish.categorie}</p>
                                     <span className="text-2xl font-bold text-primary">
                                         {(dish.prix || 0).toLocaleString()} DA

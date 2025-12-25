@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUtensils, FaClipboardList, FaUsersCog, FaChartLine, FaHistory, FaTag, FaChevronLeft, FaChevronRight, FaBars, FaTimes } from 'react-icons/fa';
+import { FaTachometerAlt, FaUtensils, FaClipboardList, FaUsersCog, FaChartLine, FaHistory, FaTag, FaChevronLeft, FaChevronRight, FaBars, FaTimes, FaList, FaBoxes } from 'react-icons/fa';
 
 const AdminSidebar = () => {
     const location = useLocation();
@@ -8,7 +8,8 @@ const AdminSidebar = () => {
 
     const menuItems = [
         { path: '/admin/dashboard', icon: FaTachometerAlt, label: 'Dashboard' },
-        { path: '/admin/add-dish', icon: FaUtensils, label: 'Gestion Plats' },
+        { path: '/admin/reports', icon: FaChartLine, label: 'Rapports' },
+        { path: '/admin/dishes', icon: FaUtensils, label: 'Gestion Plats' },
         { path: '/admin/orders', icon: FaClipboardList, label: 'Commandes' },
         { path: '/admin/users', icon: FaUsersCog, label: 'Utilisateurs' },
         { path: '/admin/activity-log', icon: FaHistory, label: 'Journal d\'activité' },

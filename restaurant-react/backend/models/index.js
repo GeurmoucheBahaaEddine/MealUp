@@ -7,6 +7,8 @@ import Favorite from './Favorite.js';
 import ActivityLog from './ActivityLog.js';
 import Review from './Review.js';
 import PromoCode from './PromoCode.js';
+import Ingredient from './Ingredient.js';
+import DishIngredient from './DishIngredient.js';
 
 // Define relationships
 User.hasMany(Order, { foreignKey: 'user_id', as: 'orders' });
@@ -41,6 +43,10 @@ Review.belongsTo(Dish, { foreignKey: 'dish_id', as: 'dish' });
 ActivityLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(ActivityLog, { foreignKey: 'user_id' });
 
+// Ingredient Associations (Many-to-Many through explicit join model)
+Dish.belongsToMany(Ingredient, { through: DishIngredient, as: 'ingredients', foreignKey: 'dish_id' });
+Ingredient.belongsToMany(Dish, { through: DishIngredient, as: 'dishes', foreignKey: 'ingredient_id' });
+
 export {
     User,
     Dish,
@@ -50,5 +56,7 @@ export {
     Favorite,
     ActivityLog,
     Review,
-    PromoCode
+    PromoCode,
+    Ingredient,
+    DishIngredient
 };

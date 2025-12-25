@@ -38,7 +38,7 @@ const Orders = () => {
 
     const fetchOrders = async () => {
         try {
-            const response = await ordersAPI.getOrders();
+            const response = await ordersAPI.getMyOrders();
             setOrders(response.data);
         } catch (err) {
             error('Erreur lors du chargement des commandes');
@@ -107,9 +107,29 @@ const Orders = () => {
                                 <div className="space-y-2">
                                     {order.items.map((item) => (
                                         <div key={item.id} className="flex justify-between text-gray-700">
-                                            <span>
-                                                {item.quantite}x {item.plat_nom}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold">
+                                                    {item.quantite}x {item.plat_nom}
+                                                </span>
+                                                {/* Display removals */}
+                                                {item.customization && item.customization.removed && item.customization.removed.length > 0 && (
+                                                    <span className="text-xs text-red-500 italic mt-1 font-medium bg-red-50/50 px-2 py-0.5 rounded-lg border border-red-100 self-start">
+                                                        Sans: {item.customization.removed.join(', ')}
+                                                    </span>
+                                                )}
+                                                {/* Display extras */}
+                                                {item.customization && item.customization.added && item.customization.added.length > 0 && (
+                                                    <span className="text-xs text-green-600 italic mt-1 font-medium bg-green-50/50 px-2 py-0.5 rounded-lg border border-green-100 self-start">
+                                                        Avec: {item.customization.added.map(e => e.nom).join(', ')}
+                                                    </span>
+                                                )}
+                                                {/* Fallback for old data or single array */}
+                                                {item.customization && Array.isArray(item.customization) && item.customization.length > 0 && (
+                                                    <span className="text-xs text-red-500 italic mt-1 font-medium bg-red-50/50 px-2 py-0.5 rounded-lg border border-red-100 self-start">
+                                                        Sans: {item.customization.join(', ')}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span className="font-semibold">
                                                 {((item.plat_prix || 0) * item.quantite).toLocaleString()} DA
                                             </span>

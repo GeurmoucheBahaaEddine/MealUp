@@ -97,6 +97,8 @@ const Users = () => {
                 <div className="relative">
                     <input
                         type="text"
+                        id="userSearch"
+                        name="userSearch"
                         placeholder="Rechercher nom, email..."
                         value={searchQuery}
                         onChange={(e) => {

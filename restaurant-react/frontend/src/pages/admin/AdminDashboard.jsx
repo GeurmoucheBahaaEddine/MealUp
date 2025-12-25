@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminAPI } from '../../services/api';
+import { adminAPI, ingredientsAPI } from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar
 } from 'recharts';
-import { FaShoppingCart, FaDollarSign, FaUsers, FaUtensils, FaArrowUp, FaArrowDown, FaShoppingBag, FaMoneyBillWave } from 'react-icons/fa';
+import { FaShoppingCart, FaDollarSign, FaUsers, FaUtensils, FaArrowUp, FaArrowDown, FaShoppingBag, FaMoneyBillWave, FaExclamationTriangle } from 'react-icons/fa';
 import StatCard from '../../components/admin/StatCard';
 import { StatSkeleton, TableRowSkeleton } from '../../components/Skeleton';
 import { useSocket } from '../../context/SocketContext';
@@ -17,6 +17,7 @@ const AdminDashboard = () => {
     const [salesData, setSalesData] = useState([]);
     const [topDishes, setTopDishes] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
+    const [lowStock, setLowStock] = useState([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('7days');
     const { success, error } = useNotification();
@@ -52,17 +53,19 @@ const AdminDashboard = () => {
     const loadDashboardData = async () => {
         setLoading(true);
         try {
-            const [statsRes, salesRes, topDishesRes, recentOrdersRes] = await Promise.all([
+            const [statsRes, salesRes, topDishesRes, recentOrdersRes, lowStockRes] = await Promise.all([
                 adminAPI.getStats(),
                 adminAPI.getSalesAnalytics(period),
                 adminAPI.getTopDishes(),
                 adminAPI.getRecentOrders(5),
+                ingredientsAPI.getLowStock()
             ]);
 
             setStats(statsRes.data);
             setSalesData(salesRes.data);
             setTopDishes(topDishesRes.data);
             setRecentOrders(recentOrdersRes.data);
+            setLowStock(lowStockRes.data);
         } catch (err) {
             error('Erreur lors du chargement du tableau de bord');
         } finally {
@@ -137,7 +140,7 @@ const AdminDashboard = () => {
                             <option value="12months">12 derniers mois</option>
                         </select>
                     </div>
-                    <div className="h-[300px]">
+                    <div className="h-[300px] min-h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={salesData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -164,9 +167,9 @@ const AdminDashboard = () => {
                 {/* Top Dishes Chart */}
                 <div className="bg-white rounded-2xl shadow-premium p-6 border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800 mb-6">Plats Populaires</h2>
-                    <div className="h-[300px]">
+                    <div className="h-[300px] min-h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={topDishes.slice(0, 5)}>
+                            <BarChart data={(topDishes || []).slice(0, 5)}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                                 <XAxis dataKey="plat_nom" axisLine={false} tickLine={false} />
                                 <YAxis axisLine={false} tickLine={false} />
@@ -180,6 +183,32 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Low Stock Alerts Widget */}
+            {!loading && lowStock.length > 0 && (
+                <div className="mb-8 bg-red-50 border border-red-100 rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center text-red-700 font-bold">
+                            <FaExclamationTriangle className="mr-3 text-xl animate-pulse" />
+                            <h2 className="text-xl">Alertes Stock Faible</h2>
+                        </div>
+                        <Link to="/admin/dishes?openStock=true" className="text-red-600 font-bold hover:underline text-sm">Gérer le stock</Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {lowStock.slice(0, 4).map(ing => (
+                            <div key={ing.id} className="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex justify-between items-center">
+                                <div>
+                                    <div className="font-bold text-gray-800">{ing.nom}</div>
+                                    <div className="text-xs text-red-500 font-black uppercase tracking-tighter">
+                                        Reste: {ing.stock_actuel} {ing.unite}
+                                    </div>
+                                </div>
+                                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Recent Orders & Top Dishes Tables */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const NotificationContext = createContext();
 
@@ -27,25 +29,24 @@ export const NotificationProvider = ({ children }) => {
         }
     }, [removeNotification]);
 
-    const success = (message, duration) => addNotification('success', message, duration);
-    const error = (message, duration) => addNotification('error', message, duration);
-    const info = (message, duration) => addNotification('info', message, duration);
-    const warning = (message, duration) => addNotification('warning', message, duration);
+    const success = useCallback((message, duration) => addNotification('success', message, duration), [addNotification]);
+    const error = useCallback((message, duration) => addNotification('error', message, duration), [addNotification]);
+    const info = useCallback((message, duration) => addNotification('info', message, duration), [addNotification]);
+    const warning = useCallback((message, duration) => addNotification('warning', message, duration), [addNotification]);
 
+    const contextValue = useMemo(() => ({
+        notifications,
+        history,
+        addNotification,
+        removeNotification,
+        success,
+        error,
+        info,
+        warning,
+        clearHistory: () => setHistory([])
+    }), [notifications, history, addNotification, removeNotification, success, error, info, warning]);
     return (
-        <NotificationContext.Provider
-            value={{
-                notifications,
-                history,
-                addNotification,
-                removeNotification,
-                success,
-                error,
-                info,
-                warning,
-                clearHistory: () => setHistory([])
-            }}
-        >
+        <NotificationContext.Provider value={contextValue}>
             {children}
             <NotificationContainer notifications={notifications} removeNotification={removeNotification} />
         </NotificationContext.Provider>
@@ -53,9 +54,6 @@ export const NotificationProvider = ({ children }) => {
 };
 
 // Internal component to display notifications
-import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
-import { AnimatePresence, motion } from 'framer-motion';
-
 const NotificationContainer = ({ notifications, removeNotification }) => {
     return (
         <div className="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none">
